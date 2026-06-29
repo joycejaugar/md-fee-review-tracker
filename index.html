@@ -672,7 +672,7 @@ function saveNote(id, val){
 function buildMsg(psm,list){
   var first=psm.split(' ')[0];
   var lines=list.map(function(p){return '• *'+p.name+'* ('+p.state+') — $'+p.currentFee+' → $'+p.newFee+'/mo (+$'+(p.newFee-p.currentFee)+')\n  _'+(p.reasons||[]).join('; ')+'_';}).join('\n');
-  return 'Hey '+first+'! \uD83D\uDC4B\n\n*July 2026 MD Fee Review* — *'+list.length+' provider'+(list.length!==1?'s':'')+' pending review.*\n\n'+lines+'\n\nFor each:\n\u2705 Approve — proceed\n\u26A0 Spicy — flag first\n\uD83D\uDEA8 Churn risk — hold\n\u23F8 Exception\n\n*No response in 1 week = billing proceeds.*\n\n— Joyce · MD Billing';
+  return 'Hey '+first+'! \uD83D\uDC4B\n\n*July 2026 MD Fee Review* — *'+list.length+' provider'+(list.length!==1?'s':'')+' pending review.*\n\n'+lines+'\n\n\u27A1\uFE0F *Open the tracker to submit your review:*\nhttps://md-fee-review-tracker.vercel.app/\n\nFor each provider: \u2705 Approve  \u26A0\uFE0F Spicy  \uD83D\uDEA8 Churn Risk\n\n\u26A0\uFE0F *Do not reply to this message — use the tracker only.*\n*No response in 1 week = billing proceeds automatically.*\n\n— Joyce · MD Billing';
 }
 
 function buildEmailSubject(){
@@ -690,8 +690,8 @@ function buildEmailBody(psm, list){
   return 'Hi ' + first + ',\n\n'
     + 'This is your July 2026 MD Fee Review reminder. You have ' + list.length + ' provider' + (list.length !== 1 ? 's' : '') + ' pending review before the billing cycle closes.\n\n'
     + 'PROVIDERS FOR REVIEW:\n' + lines + '\n\n'
-    + 'Please open the MD Fee Tracker to submit your review for each provider.\n'
-    + 'For each you can: Approve / Flag as Spicy / Mark Churn Risk / Request Hold.\n\n'
+    + 'Please open the MD Fee Tracker to submit your review for each provider:\nhttps://md-fee-review-tracker.vercel.app/\n'
+    + 'For each you can: Approve / Flag as Spicy / Mark Churn Risk.\n\n'
     + '⚠️ Do not reply to this email. All responses must be submitted through the tracker.\n'
     + 'No response within 1 week = billing proceeds automatically.\n\n'
     + 'Thanks,\nJoyce\nMD Billing — Moxie';
