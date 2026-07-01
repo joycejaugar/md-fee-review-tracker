@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Fee Increase Tracker &mdash; Moxie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#faf8f4;--cream2:#f3efe8;--cream3:#ece6db;--sand:#d9cfc0;--taupe:#b5a898;--brown:#7a6a58;--ink:#2b2318;--ink2:#4a3d30;--rose:#c97b6e;--rose-bg:#fdf0ee;--rose-bdr:#ebbdb6;--green:#4a8c6f;--green-bg:#edf5f0;--green-bdr:#aad3be;--amber:#c48a2e;--amber-bg:#fdf4e5;--amber-bdr:#e8c97a;--r:10px;--sh:0 2px 12px rgba(43,35,24,.07);--sans:"DM Sans",system-ui,sans-serif;--serif:"Playfair Display",Georgia,serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:14px;min-height:100vh;}
+header{background:var(--ink);padding:0 36px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;}
+.logo{font-family:var(--serif);font-size:19px;color:#fff;display:flex;align-items:center;gap:8px;}
+.logo-dot{width:7px;height:7px;background:var(--rose);border-radius:50%;}
+.hbadge{background:rgba(255,255,255,.1);color:#e8e4de;font-size:12px;padding:4px 12px;border-radius:20px;}
+.tabs{background:#fff;border-bottom:1px solid var(--cream3);padding:0 36px;display:flex;position:sticky;top:58px;z-index:90;box-shadow:0 2px 6px rgba(43,35,24,.04);}
+.tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--taupe);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.tab:hover{color:var(--ink2);}.tab.active{color:var(--ink);border-bottom-color:var(--ink);font-weight:600;}
+.tbadge{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
+.tbadge.r{background:var(--rose-bg);color:var(--rose);border-color:var(--rose-bdr);}
+.panel{display:none;}.panel.active{display:block;}
+.wrap{max-width:1300px;margin:0 auto;padding:28px 36px 80px;}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;}
+.stat{background:#fff;border:1px solid var(--cream3);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);}
+.stat-n{font-family:var(--serif);font-size:32px;line-height:1;margin-bottom:4px;}
+.stat-n.a{color:var(--amber);}.stat-n.g{color:var(--green);}.stat-n.r{color:var(--rose);}
+.stat-l{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--taupe);}
+.prog{background:#fff;border:1px solid var(--cream3);border-radius:var(--r);padding:13px 18px;margin-bottom:22px;display:flex;align-items:center;gap:14px;}
+.prog-bar{flex:1;height:6px;background:var(--cream3);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--brown),var(--ink));border-radius:3px;transition:width .5s;}
+.prog-pct{font-size:13px;font-weight:700;color:var(--ink);min-width:36px;text-align:right;}
+.rules{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--cream3);border:1px solid var(--cream3);border-radius:var(--r);overflow:hidden;margin-bottom:22px;}
+.rule{background:#fff;padding:12px 16px;}
+.rule-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--taupe);margin-bottom:3px;}
+.rule-val{font-size:12px;color:var(--ink2);line-height:1.5;}
+.toolbar{display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap;}
+.search{flex:1;min-width:200px;background:#fff;border:1px solid var(--cream3);border-radius:8px;padding:8px 13px;font-family:var(--sans);font-size:13px;color:var(--ink);outline:none;}
+.search:focus{border-color:var(--brown);}.search::placeholder{color:var(--taupe);}
+.fbtn{background:#fff;border:1px solid var(--cream3);color:var(--taupe);border-radius:8px;padding:8px 14px;font-size:12px;font-family:var(--sans);cursor:pointer;font-weight:500;transition:all .15s;}
+.fbtn.active{background:var(--ink);border-color:var(--ink);color:#fff;}.fbtn:hover:not(.active){border-color:var(--sand);color:var(--ink2);}
+.tbl{background:#fff;border:1px solid var(--cream3);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--cream2);border-bottom:1px solid var(--cream3);}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--brown);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--cream3);transition:background .1s;}
+tbody tr:hover{background:var(--cream2);}tbody tr:last-child{border-bottom:none;}
+td{padding:12px 14px;vertical-align:middle;font-size:13px;}
+.pname{font-weight:600;color:var(--ink);}.psub{font-size:11px;color:var(--taupe);margin-top:2px;}
+.rv-ok{font-size:11px;color:var(--green);margin-top:1px;}.rv-lo{font-size:11px;color:var(--taupe);margin-top:1px;}
+.pill{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.pn{background:var(--cream2);color:var(--brown);border:1px solid var(--cream3);}
+.pu{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr);}
+.pa{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr);}
+.sbtn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);}
+.sp{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr);}
+.sa{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr);}
+.sf{background:var(--rose-bg);color:var(--rose);border:1px solid var(--rose-bdr);}
+.sv{background:var(--cream3);color:var(--taupe);border:1px solid var(--sand);}
+.sdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.acts{display:flex;gap:5px;}
+.bxs{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid;font-family:var(--sans);transition:opacity .15s;}
+.bxs:hover{opacity:.8;}
+.bapp{background:var(--green-bg);color:var(--green);border-color:var(--green-bdr);}
+.brev{background:var(--cream2);color:var(--ink2);border-color:var(--cream3);}
+.bvoid{background:var(--rose-bg);color:var(--rose);border-color:var(--rose-bdr);}
+.pd{background:var(--rose-bg);color:var(--rose);border:1px solid var(--rose-bdr);}
+.nrow td{padding:0 14px 10px 36px;background:var(--cream2)!important;}
+.ninner{border-left:3px solid var(--sand);padding:6px 10px;font-size:12px;color:var(--brown);}
+.empty td{text-align:center;padding:52px;color:var(--taupe);font-size:13px;}
+.psm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px;}
+.psm-card{background:#fff;border:1px solid var(--cream3);border-radius:12px;overflow:hidden;box-shadow:var(--sh);}
+.psm-ch{background:var(--ink);padding:14px 18px;display:flex;align-items:center;gap:10px;}
+.psm-av{width:34px;height:34px;background:var(--rose);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:14px;color:#fff;flex-shrink:0;}
+.psm-nm{color:#fff;font-weight:600;font-size:14px;}.psm-sb{color:var(--taupe);font-size:11px;margin-top:1px;}
+.psm-cnt{margin-left:auto;background:rgba(255,255,255,.12);color:#e8e4de;font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;}
+.psm-rows{padding:10px;display:flex;flex-direction:column;gap:6px;}
+.psm-row{background:var(--cream2);border:1px solid var(--cream3);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;transition:background .12s;}
+.psm-row:hover{background:var(--cream3);}
+.psm-note{width:100%;background:#fff;border:1px solid var(--cream3);border-radius:6px;padding:6px 9px;font-family:var(--sans);font-size:11px;color:var(--ink);resize:none;outline:none;margin-top:6px;line-height:1.4;}
+.psm-note:focus{border-color:var(--brown);}
+.psm-note::placeholder{color:var(--taupe);}
+.psm-actions{display:flex;align-items:center;gap:6px;margin-top:6px;}
+.bpsm-void{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:var(--rose-bg);color:var(--rose);border:1px solid var(--rose-bdr);font-family:var(--sans);}
+.bpsm-void:hover{opacity:.8;}
+#voidTypeOpts label:has(input:checked){border-color:var(--rose);background:var(--rose-bg);}
+.psm-rn{font-weight:600;font-size:13px;}.psm-rf{font-size:11px;color:var(--taupe);margin-top:2px;}
+.psm-foot{border-top:1px solid var(--cream3);padding:10px 14px;display:flex;gap:8px;align-items:center;}
+.psm-slk{flex:1;background:var(--ink);color:#fff;border:none;border-radius:7px;padding:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:background .2s;}
+.psm-slk:hover{background:var(--ink2);}.psm-slk.sent{background:var(--green);}
+.psm-email{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr);border-radius:7px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:background .2s;white-space:nowrap;}
+.psm-email:hover{background:var(--amber-bdr);color:var(--ink);}.psm-email.sent{background:var(--green);color:#fff;border-color:var(--green);}
+.psm-pend{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr);border-radius:7px;padding:8px 10px;font-size:11px;font-weight:700;white-space:nowrap;}
+.exc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.exc-stat{background:#fff;border:1px solid var(--cream3);border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);}
+.exc-ico{font-size:24px;}.exc-num{font-family:var(--serif);font-size:24px;line-height:1;margin-bottom:2px;}
+.exc-num.r{color:var(--rose);}.exc-num.a{color:var(--amber);}.exc-num.b{color:var(--brown);}
+.exc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--taupe);}
+.exc-card{background:#fff;border:1px solid var(--cream3);border-radius:var(--r);padding:14px 18px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;box-shadow:var(--sh);}
+.exc-card.tc{border-left:3px solid var(--rose);}.exc-card.ts{border-left:3px solid var(--amber);}.exc-card.th{border-left:3px solid var(--sand);}
+.exc-cn{font-weight:700;font-size:14px;margin-bottom:3px;}.exc-meta{font-size:12px;color:var(--taupe);margin-bottom:6px;}
+.exc-note{background:var(--cream2);border-left:3px solid var(--sand);border-radius:0 5px 5px 0;padding:5px 10px;font-size:12px;color:var(--brown);}
+.exc-fee-old{font-size:12px;color:var(--taupe);}.exc-fee-new{font-family:var(--serif);font-size:16px;}.exc-fee-diff{font-size:11px;font-weight:600;color:var(--green);}
+.exc-acts{display:flex;gap:6px;margin-top:8px;}
+.bres{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr);font-family:var(--sans);}
+.bedt{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:var(--cream2);color:var(--ink2);border:1px solid var(--cream3);font-family:var(--sans);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(43,35,24,.5);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:520px;position:relative;box-shadow:0 4px 24px rgba(43,35,24,.12);max-height:90vh;overflow-y:auto;}
+.mclose{position:absolute;top:14px;right:18px;background:none;border:none;color:var(--taupe);font-size:22px;cursor:pointer;line-height:1;}.mclose:hover{color:var(--ink);}
+.modal h3{font-family:var(--serif);font-size:20px;margin-bottom:3px;}.msub{color:var(--brown);font-size:13px;margin-bottom:20px;}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.mf label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--taupe);margin-bottom:3px;}
+.mf .mv{font-size:13px;color:var(--ink);font-weight:500;}
+.mf .mv.g{color:var(--green);}.mf .mv.r{color:var(--rose);}.mf .mv.a{color:var(--amber);}
+.mdiv{border:none;border-top:1px solid var(--cream3);margin:4px 0 16px;}
+.mseclbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--taupe);margin-bottom:8px;}
+.fopts{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;}
+.fopt{padding:6px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--cream3);background:var(--cream2);color:var(--taupe);font-family:var(--sans);transition:all .12s;}
+.fopt:hover{border-color:var(--sand);color:var(--ink2);}
+.fopt.fapp{background:var(--green-bg);color:var(--green);border-color:var(--green-bdr);}
+.fopt.fspy{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bdr);}
+.fopt.fchn{background:var(--rose-bg);color:var(--rose);border-color:var(--rose-bdr);}
+.fopt.fhld{background:var(--cream3);color:var(--ink2);border-color:var(--sand);}
+textarea.mnote{width:100%;background:var(--cream2);border:1px solid var(--cream3);border-radius:8px;padding:9px 11px;color:var(--ink);font-family:var(--sans);font-size:13px;resize:vertical;min-height:68px;outline:none;}
+textarea.mnote:focus{border-color:var(--brown);}textarea.mnote::placeholder{color:var(--taupe);}
+.macts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.bpri{background:var(--ink);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);}
+.bpri:hover{background:var(--ink2);}
+.bsec{background:transparent;color:var(--brown);border:1px solid var(--cream3);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:var(--sans);}
+.slack-pre{background:#4a154b;border-radius:10px;padding:16px;margin:12px 0;font-family:monospace;font-size:12px;color:#fff;line-height:1.7;max-height:220px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;}
+.btn-s{background:var(--ink);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:7px;}
+.btn-s:hover{background:var(--ink2);}.btn-s.g{background:var(--green);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:300;transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}.toast.tg{background:var(--green);}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-dot"></div>Moxie MD Ops</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="hbadge">July 2026 &middot; Eff. Aug 1</span>
+    <span style="background:rgba(255,255,255,.07);color:var(--taupe);font-size:10px;padding:3px 8px;border-radius:6px;">PSM Toolkit</span>
+    <span id="userBadge" style="background:rgba(255,255,255,.12);color:#e8e4de;font-size:12px;padding:4px 12px;border-radius:20px;"></span>
+  </div>
+</header>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview',this)">&#x1F4CA; Overview <span class="tbadge" id="tbOv">57</span></div>
+  <div class="tab" onclick="switchTab('psm',this)">&#x1F465; PSM Review <span class="tbadge" id="tbPsm">57</span></div>
+  <div class="tab" onclick="switchTab('exceptions',this)">&#x1F6A8; Exceptions <span class="tbadge r" id="tbExc">&mdash;</span></div>
+  <div class="tab" onclick="switchTab('import',this)">&#x1F4C2; Import CSV</div>
+</div>
+
+<div class="panel active" id="panel-overview">
+<div class="wrap">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap;">
+    <div>
+      <h1 style="font-family:var(--serif);font-size:28px;letter-spacing:-.3px;">MD Fee Increase Review</h1>
+      <p style="color:var(--brown);margin-top:5px;font-size:13px;">Jan &amp; July cycles &middot; PSM must respond within 1 week &middot; No response = billing proceeds</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-s g" id="sendAllBtn" onclick="sendAllDMs()">&#x1F4AC; Slack All</button>
+      <button class="btn-s" style="background:var(--amber);border:none;" id="sendAllEmailBtn" onclick="sendAllEmails()">&#x2709; Email All</button>
+      <button class="btn-s" onclick="openSlackModal()">&#x1F441; Preview</button>
+    </div>
+  </div>
+  <div class="rules">
+    <div class="rule"><div class="rule-lbl">Revenue Threshold</div><div class="rule-val"><strong>$10K avg net rev / 6 months</strong> required for advanced rate &amp; volume bonus</div></div>
+    <div class="rule"><div class="rule-lbl">Volume Bonus</div><div class="rule-val">+<strong>$125/mo</strong> per 100 clients (6-mo avg) &mdash; above $10K only</div></div>
+    <div class="rule"><div class="rule-lbl">Advanced Services</div><div class="rule-val"><strong>Peptide Therapy, Hormone Therapy, any Laser, IPL/BBL</strong> &rarr; Advanced rate if 6-mo avg rev &ge; $10K</div></div>
+    <div class="rule"><div class="rule-lbl">Custom PC States</div><div class="rule-val"><strong>CA, NC</strong> &middot; $950 std / $1,350 adv &middot; <span style="color:var(--taupe)">IL pending migration</span></div></div>
+    <div class="rule"><div class="rule-lbl">PSM Deadline</div><div class="rule-val"><strong style="color:var(--amber)">1 week</strong> &middot; No response = proceeds</div></div>
+  </div>
+  <div class="prog">
+    <span style="font-size:12px;font-weight:600;color:var(--ink2);white-space:nowrap;">PSM Review Progress</span>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <span class="prog-pct" id="progPct">0%</span>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="sTotal">57</div><div class="stat-l">Total Providers</div></div>
+    <div class="stat"><div class="stat-n a" id="sPend">57</div><div class="stat-l">Awaiting Review</div></div>
+    <div class="stat"><div class="stat-n g" id="sApp">0</div><div class="stat-l">Approved</div></div>
+    <div class="stat"><div class="stat-n r" id="sFlag">0</div><div class="stat-l">Flagged / Exception</div></div>
+  </div>
+  <div class="toolbar">
+    <input class="search" id="srch" placeholder="Search provider, PSM, state&hellip;" oninput="renderTable()">
+    <button class="fbtn active" onclick="setFilter('all',this)">All</button>
+    <button class="fbtn" onclick="setFilter('pending',this)">Pending</button>
+    <button class="fbtn" onclick="setFilter('approved',this)">Approved</button>
+    <button class="fbtn" onclick="setFilter('flagged',this)">Flagged</button>
+    <button class="fbtn" onclick="setFilter('voided',this)">Voided</button>
+    <button class="fbtn" onclick="setFilter('decrease',this)">&#x2193; Decreases</button>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Provider / MedSpa</th><th>PC</th><th>6-Mo Avg Revenue</th>
+      <th>Clients (6-mo avg)</th><th>Advanced Services</th>
+      <th>Current Fee</th><th>New Fee</th><th>Reason</th>
+      <th>PSM / Status</th><th>Actions</th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table></div>
+</div></div>
+
+<div class="panel" id="panel-psm">
+<div class="wrap">
+  <div style="margin-bottom:22px;">
+    <h1 style="font-family:var(--serif);font-size:28px;letter-spacing:-.3px;">MD Fee Increase Review</h1>
+    <p style="color:var(--brown);margin-top:5px;font-size:13px;">Jan &amp; July cycles &middot; PSM must respond within 1 week &middot; No response = billing proceeds</p>
+  </div>
+  <div class="rules">
+    <div class="rule"><div class="rule-lbl">Revenue Threshold</div><div class="rule-val"><strong>$10K avg net rev / 6 months</strong> required for advanced rate &amp; volume bonus</div></div>
+    <div class="rule"><div class="rule-lbl">Volume Bonus</div><div class="rule-val">+<strong>$125/mo</strong> per 100 clients (6-mo avg) &mdash; above $10K only</div></div>
+    <div class="rule"><div class="rule-lbl">Advanced Services</div><div class="rule-val"><strong>Peptide Therapy, Hormone Therapy, any Laser, IPL/BBL</strong> &rarr; Advanced rate if 6-mo avg rev &ge; $10K</div></div>
+    <div class="rule"><div class="rule-lbl">Custom PC States</div><div class="rule-val"><strong>CA, NC</strong> &middot; $950 std / $1,350 adv &middot; <span style="color:var(--taupe)">IL pending migration</span></div></div>
+    <div class="rule"><div class="rule-lbl">PSM Deadline</div><div class="rule-val"><strong style="color:var(--amber)">1 week</strong> &middot; No response = proceeds</div></div>
+  </div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 style="font-family:var(--serif);font-size:28px;">PSM Review</h1>
+      <p style="color:var(--brown);margin-top:4px;font-size:13px;">Click any provider to review. 1 week to respond &mdash; no response = billing proceeds.</p>
+    </div>
+    <select id="psmSel" onchange="renderPsm()" style="background:#fff;border:1px solid var(--cream3);border-radius:8px;padding:8px 13px;font-family:var(--sans);font-size:13px;color:var(--ink);outline:none;cursor:pointer;">
+      <option value="all">All PSMs</option>
+      <option value="Alisha Faber">Alisha Faber</option>
+      <option value="Angela Carter">Angela Carter</option>
+      <option value="Angie Wing">Angie Wing</option>
+      <option value="Brittany Bureski">Brittany Bureski</option>
+      <option value="Chrissie Zimbleman">Chrissie Zimbleman</option>
+      <option value="Ericka Olmos">Ericka Olmos</option>
+      <option value="Growth Success">Growth Success</option>
+      <option value="Hayley Husted">Hayley Husted</option>
+      <option value="Heather Dominguez">Heather Dominguez</option>
+      <option value="Jaqlyn Dreas">Jaqlyn Dreas</option>
+      <option value="Juliana Herrero">Juliana Herrero</option>
+      <option value="Katie Sensing">Katie Sensing</option>
+      <option value="Kendra Waller">Kendra Waller</option>
+      <option value="Marcus Repp">Marcus Repp</option>
+      <option value="Megan Koncek">Megan Koncek</option>
+      <option value="Meredith DeSousa">Meredith DeSousa</option>
+      <option value="Michelle Garcia">Michelle Garcia</option>
+      <option value="Mikyla Race">Mikyla Race</option>
+      <option value="Sarah Smith">Sarah Smith</option>
+    </select>
+  </div>
+  <div class="psm-grid" id="psmGrid"></div>
+</div></div>
+
+<div class="panel" id="panel-exceptions">
+<div class="wrap">
+  <div style="margin-bottom:22px;">
+    <h1 style="font-family:var(--serif);font-size:28px;letter-spacing:-.3px;">MD Fee Increase Review</h1>
+    <p style="color:var(--brown);margin-top:5px;font-size:13px;">Jan &amp; July cycles &middot; PSM must respond within 1 week &middot; No response = billing proceeds</p>
+  </div>
+  <div class="rules">
+    <div class="rule"><div class="rule-lbl">Revenue Threshold</div><div class="rule-val"><strong>$10K avg net rev / 6 months</strong> required for advanced rate &amp; volume bonus</div></div>
+    <div class="rule"><div class="rule-lbl">Volume Bonus</div><div class="rule-val">+<strong>$125/mo</strong> per 100 clients (6-mo avg) &mdash; above $10K only</div></div>
+    <div class="rule"><div class="rule-lbl">Advanced Services</div><div class="rule-val"><strong>Peptide Therapy, Hormone Therapy, any Laser, IPL/BBL</strong> &rarr; Advanced rate if 6-mo avg rev &ge; $10K</div></div>
+    <div class="rule"><div class="rule-lbl">Custom PC States</div><div class="rule-val"><strong>CA, NC</strong> &middot; $950 std / $1,350 adv &middot; <span style="color:var(--taupe)">IL pending migration</span></div></div>
+    <div class="rule"><div class="rule-lbl">PSM Deadline</div><div class="rule-val"><strong style="color:var(--amber)">1 week</strong> &middot; No response = proceeds</div></div>
+  </div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 style="font-family:var(--serif);font-size:28px;">Exception Tracker</h1>
+      <p style="color:var(--brown);margin-top:4px;font-size:13px;">Flagged, spicy, and held providers.</p>
+    </div>
+    <button class="btn-s" onclick="exportExc()">&#x2B07; Export CSV</button>
+  </div>
+  <div class="exc-stats">
+    <div class="exc-stat"><div class="exc-ico">&#x1F6A8;</div><div><div class="exc-num r" id="exChurn">0</div><div class="exc-lbl">Churn Risk</div></div></div>
+    <div class="exc-stat"><div class="exc-ico">&#x26A0;</div><div><div class="exc-num a" id="exSpicy">0</div><div class="exc-lbl">Spicy Provider</div></div></div>
+    <div class="exc-stat"><div class="exc-ico">&#x23F8;</div><div><div class="exc-num b" id="exHold">0</div><div class="exc-lbl">Held</div></div></div>
+  </div>
+  <div id="excContent"></div>
+</div></div>
+
+<div class="overlay" id="revModal">
+<div class="modal">
+  <button class="mclose" onclick="closeRev()">&times;</button>
+  <h3 id="mTitle"></h3><p class="msub" id="mSub"></p>
+  <div class="mgrid" id="mGrid"></div>
+  <hr class="mdiv">
+  <div class="mseclbl">PSM Response</div>
+  <div class="fopts">
+    <button class="fopt" id="fApp" onclick="selFlag('approve')">&#x2713; Approve</button>
+    <button class="fopt" id="fSpy" onclick="selFlag('spicy')">&#x26A0; Spicy</button>
+    <button class="fopt" id="fChn" onclick="selFlag('churn')">&#x1F6A8; Churn Risk</button>
+    <button class="fopt" id="fHld" onclick="selFlag('hold')">&#x23F8; Hold</button>
+  </div>
+  <textarea class="mnote" id="mNote" placeholder="Notes for Joyce &mdash; churn risk context, billing dispute, etc."></textarea>
+  <div class="macts">
+    <button class="bsec" onclick="closeRev()">Cancel</button>
+    <button class="bpri" onclick="submitRev()">Submit Review</button>
+  </div>
+</div></div>
+
+<div class="overlay" id="slackModal">
+<div class="modal">
+  <button class="mclose" onclick="closeSlack()">&times;</button>
+  <h3>Preview Slack Messages</h3>
+  <p class="msub">DMs that will be sent to each PSM with pending providers.</p>
+  <div class="slack-pre" id="slackPre"></div>
+  <div class="macts">
+    <button class="bsec" onclick="closeSlack()">Close</button>
+    <button class="bpri" onclick="copySlack()">&#x1F4CB; Copy All</button>
+  </div>
+</div></div>
+
+<div class="panel" id="panel-import">
+<div class="wrap" style="max-width:700px;">
+  <h1 style="font-family:var(--serif);font-size:28px;margin-bottom:6px;">Import New CSV</h1>
+  <p style="color:var(--brown);font-size:13px;margin-bottom:24px;">Upload a fresh OMNI export to replace all current data. Your July 1 file will override the existing baked-in data completely.</p>
+
+  <div style="background:var(--amber-bg);border:1px solid var(--amber-bdr);border-radius:var(--r);padding:14px 18px;font-size:12px;color:var(--ink2);margin-bottom:20px;line-height:1.7;">
+    <strong>Required columns:</strong><br>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;">Medspa Name</code>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;">PSM Name</code>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;">State</code>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;">Monthly Fee</code>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;">Avg. Net Revenue, Previous 6 Months</code>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;"># Clients With Paid Appointments, Previous Month</code>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;">Service Types Offered</code>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;">Subscription Status</code>
+    <code style="background:rgba(196,138,46,.15);padding:1px 5px;border-radius:4px;font-size:11px;">External MD?</code>
+    (Yes = exclude)
+  </div>
+
+  <div id="uploadZone" onclick="document.getElementById('csvInput').click()"
+    style="border:2px dashed var(--sand);border-radius:var(--r);padding:40px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;">
+    <div style="font-size:32px;margin-bottom:10px;">&#x1F4C2;</div>
+    <div style="font-family:var(--serif);font-size:18px;color:var(--ink2);margin-bottom:6px;">Drop your CSV here</div>
+    <div style="font-size:13px;color:var(--taupe);">or <span style="color:var(--ink2);font-weight:600;text-decoration:underline;">browse to upload</span></div>
+    <input type="file" id="csvInput" accept=".csv" style="display:none;">
+  </div>
+
+  <div style="background:#fff;border:1px solid var(--cream3);border-radius:var(--r);padding:20px 24px;margin-bottom:16px;">
+    <h3 style="font-family:var(--serif);font-size:17px;margin-bottom:4px;">Google Sheet Sync</h3>
+    <p style="color:var(--brown);font-size:13px;margin-bottom:14px;">All PSM reviews sync automatically to your Google Sheet. Paste your Apps Script URL below to activate.</p>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+      <input id="sheetUrlInput" class="search" placeholder="Paste Apps Script Web App URL here..." style="flex:1;" value="https://script.google.com/macros/s/AKfycbwDnJqnOy5K11dIk222Bsn8GvAuKC6xZ-L_uP39Qo6EJvGT2bBNHgVd5wUTQH37PZ7Mmw/exec"
+        oninput="SHEET_SCRIPT_URL=this.value.trim();try{localStorage.setItem('moxie_sheet_url',SHEET_SCRIPT_URL);}catch(e){}" onchange="toast(SHEET_SCRIPT_URL?'✅ Sheet URL saved':'Sheet URL cleared',true);" onblur="toast(SHEET_SCRIPT_URL?'✅ Sheet URL saved':'Sheet URL cleared',true);">
+      <button class="bsec" onclick="testSheetConnection()" style="white-space:nowrap;font-size:12px;">&#x1F50C; Test</button>
+      <button class="bpri" onclick="syncAllToSheet()" style="white-space:nowrap;font-size:12px;">&#x21BB; Sync All</button>
+    </div>
+    <a href="https://docs.google.com/spreadsheets/d/1VLo59wk97zly5r-A6ac06KTm3bpVAoSmDo_hHfy5xUM/edit" target="_blank"
+      style="font-size:12px;color:var(--brown);text-decoration:underline;">&#x1F4CA; Open Google Sheet &rarr;</a>
+  </div>
+  <div id="storageInfo" style="margin-top:20px;padding:14px 18px;background:#fff;border:1px solid var(--cream3);border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:2px;">&#x1F4BE; Saved State</div>
+      <div id="storageInfoText" style="font-size:12px;color:var(--taupe);">Loading...</div>
+    </div>
+    <button class="bsec" onclick="clearState()" style="white-space:nowrap;font-size:12px;">&#x1F5D1; Clear saved state</button>
+  </div>
+  <div id="uploadStatus" style="display:none;margin-top:14px;background:var(--green-bg);border:1px solid var(--green-bdr);border-radius:var(--r);padding:12px 18px;font-size:13px;color:var(--green);font-weight:500;"></div>
+  <div id="uploadError" style="display:none;margin-top:14px;background:var(--rose-bg);border:1px solid var(--rose-bdr);border-radius:var(--r);padding:12px 18px;font-size:13px;color:var(--rose);font-weight:500;"></div>
+</div>
+</div>
+
+<div class="overlay" id="welcomeModal" style="background:rgba(43,35,24,.7);">
+<div class="modal" style="max-width:440px;text-align:center;">
+  <div style="font-size:36px;margin-bottom:12px;">&#x1F465;</div>
+  <h3 style="margin-bottom:6px;">Welcome to MD Fee Review</h3>
+  <p class="msub" style="margin-bottom:24px;">Select your role to get started.</p>
+  <div style="text-align:left;margin-bottom:16px;">
+    <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--taupe);display:block;margin-bottom:8px;">I am&hellip;</label>
+    <select id="whoAmI" onchange="onWhoChange()" style="width:100%;background:#fff;border:1.5px solid var(--cream3);border-radius:8px;padding:10px 14px;font-family:var(--sans);font-size:14px;color:var(--ink);outline:none;cursor:pointer;">
+      <option value="">Select your name&hellip;</option>
+      <option value="__joyce__">&#x1F511; Joyce (Admin)</option>
+      <option value="__mdteam__">&#x1F9BA; MD Team</option>
+    </select>
+  </div>
+  <div id="joycePasskeyWrap" style="display:none;text-align:left;margin-bottom:16px;">
+    <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--taupe);display:block;margin-bottom:6px;">Passkey</label>
+    <input type="password" id="joycePasskey" placeholder="Enter your passkey&hellip;" style="width:100%;background:var(--cream2);border:1.5px solid var(--cream3);border-radius:8px;padding:10px 14px;font-family:var(--sans);font-size:14px;color:var(--ink);outline:none;" onkeydown="if(event.key==='Enter')confirmIdentity()">
+    <div id="passkeyError" style="display:none;font-size:11px;color:var(--rose);margin-top:5px;">Incorrect passkey. Try again.</div>
+  </div>
+  <label style="display:flex;align-items:center;gap:8px;justify-content:center;font-size:12px;color:var(--taupe);margin-bottom:20px;cursor:pointer;">
+    <input type="checkbox" id="rememberMe" style="accent-color:var(--ink);">
+    Remember me on this device
+  </label>
+  <button class="bpri" style="width:100%;" onclick="confirmIdentity()">Continue</button>
+</div>
+</div>
+
+<div class="overlay" id="voidModal">
+<div class="modal" style="max-width:460px;">
+  <button class="mclose" onclick="closeVoidModal()">&times;</button>
+  <h3>Void Provider</h3>
+  <p class="msub" id="voidModalSub"></p>
+  <div style="margin-bottom:16px;">
+    <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--taupe);display:block;margin-bottom:8px;">How long to void?</label>
+    <div style="display:flex;flex-direction:column;gap:8px;" id="voidTypeOpts">
+      <label style="display:flex;align-items:flex-start;gap:10px;background:var(--cream2);border:1.5px solid var(--cream3);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color .15s;" id="vopt-review">
+        <input type="radio" name="voidType" value="review" checked style="margin-top:2px;accent-color:var(--rose);">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink);">Review next cycle</div>
+          <div style="font-size:11px;color:var(--taupe);margin-top:2px;">Skipped for now. Will come back for re-evaluation in the next billing cycle.</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;background:var(--cream2);border:1.5px solid var(--cream3);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color .15s;" id="vopt-permanent">
+        <input type="radio" name="voidType" value="permanent" style="margin-top:2px;accent-color:var(--rose);">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink);">Permanent</div>
+          <div style="font-size:11px;color:var(--taupe);margin-top:2px;">Never appears again. Use for churned providers or permanent external MD setups.</div>
+        </div>
+      </label>
+    </div>
+  </div>
+  <div style="margin-bottom:18px;">
+    <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--taupe);display:block;margin-bottom:6px;">Reason (optional)</label>
+    <input id="voidReason" type="text" placeholder="e.g. Churned, external MD arrangement, billing dispute..." style="width:100%;background:var(--cream2);border:1px solid var(--cream3);border-radius:8px;padding:9px 11px;color:var(--ink);font-family:var(--sans);font-size:13px;outline:none;">
+  </div>
+  <div class="macts">
+    <button class="bsec" onclick="closeVoidModal()">Cancel</button>
+    <button class="bpri" style="background:var(--rose);border:none;" onclick="confirmVoid()">&#x2298; Void Provider</button>
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var DATA = [{"id": 5, "name": "Coastal Glo", "provider": "Sammi Pacheco", "mespaId": "2010", "psm": "Sarah Smith", "md": "Titilola Alao", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy", "IPL / BBL", "Fractional Laser", "Laser Hair Removal"], "revenue": 105940.96, "clients": 223.7, "clientsPrevMonth": 303, "currentFee": 775, "newFee": 1450, "diff": 675, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy, IPL / BBL, +more) + 6-mo avg rev above $10K", "Volume bonus: 223.7 avg clients/6mo (+$250/mo) \u2014 rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 11, "name": "Revive Aesthetics and Wellness", "provider": "Marcie Beth Eubank Call/Text Medspa if There Are Booking Issues", "mespaId": "1998", "psm": "Heather Dominguez", "md": "Greg Caputy", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 22623.92, "clients": 40.7, "clientsPrevMonth": 40, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 33, "name": "Honest MedSpa", "provider": "Sophia Andujar, Marlina Kreiner", "mespaId": "2502", "psm": "Kendra Waller", "md": "Sharon Browning", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 41256.49, "clients": 104.0, "clientsPrevMonth": 89, "currentFee": 1200, "newFee": 1475, "diff": 275, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K", "Volume bonus: 104.0 avg clients/6mo (+$125/mo) \u2014 rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 36, "name": "Bliss Aesthetics", "provider": "April Russell, Page Manry", "mespaId": "1865", "psm": "Angela Carter", "md": "Kyle Chong", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["IPL / BBL"], "revenue": 55583.67, "clients": 104.5, "clientsPrevMonth": 115, "currentFee": 1200, "newFee": 1325, "diff": 125, "direction": "increase", "reasons": ["Volume bonus: 104.5 avg clients/6mo (+$125/mo) \u2014 rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 51, "name": "Beauty Revival Barn", "provider": "Cecilia Wheeler", "mespaId": "2306", "psm": "Meredith DeSousa", "md": "Nauman Rashid", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 17837.54, "clients": 45.8, "clientsPrevMonth": 83, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 53, "name": "Body Wide Wellness Aesthetics", "provider": "Lashonda McPeak", "mespaId": "2565", "psm": "Megan Koncek", "md": "Larry Skeete", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Fractional Laser"], "revenue": 12610.55, "clients": 35.3, "clientsPrevMonth": 45, "currentFee": 650, "newFee": 1350, "diff": 700, "direction": "increase", "reasons": ["Advanced services (Fractional Laser) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 62, "name": "Everlasting Beauty & Wellness", "provider": "Ronda Ensey", "mespaId": "1876", "psm": "Michelle Garcia", "md": "Titilola Alao", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 18109.1, "clients": 57.2, "clientsPrevMonth": 63, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 64, "name": "Enova Medspa", "provider": "Elena Rezende", "mespaId": "1838", "psm": "Alisha Faber", "md": "Justin Rome", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["IPL / BBL", "Laser Hair Removal"], "revenue": 13654.28, "clients": 27.0, "clientsPrevMonth": 24, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (IPL / BBL, Laser Hair Removal) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 86, "name": "KaiZen Wellness & Aesthetics", "provider": "Kimberly DeWitt, Brandi Eddings", "mespaId": "1843", "psm": "Alisha Faber", "md": "Titilola Alao", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 7228.31, "clients": 17.8, "clientsPrevMonth": 24, "currentFee": 1200, "newFee": 650, "diff": -550, "direction": "decrease", "reasons": ["No advanced services on file \u2014 should be at standard rate"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 103, "name": "Botiva Aesthetics & Wellness", "provider": "Jodie Lane", "mespaId": "2190", "psm": "Growth Success", "md": "Greg Caputy", "state": "CO", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 2342.91, "clients": 6.2, "clientsPrevMonth": 7, "currentFee": 500, "newFee": 650, "diff": 150, "direction": "increase", "reasons": ["Standard rate correction"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 105, "name": "Audubon Aesthetics", "provider": "Melissa Percle, Colby Airado", "mespaId": "1885", "psm": "Meredith DeSousa", "md": "Dr Daniel Urias", "state": "LA", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy", "Male Hormone Therapy"], "revenue": 21149.63, "clients": 56.2, "clientsPrevMonth": 56, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy, Male Hormone Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 109, "name": "Renew Room", "provider": "Cayley Cline, Kamren Morton-Smith, Carly Daulton", "mespaId": "1734", "psm": "Angie Wing", "md": "Bharat Kothakota", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy", "Male Hormone Therapy", "IPL / BBL", "Fractional Laser"], "revenue": 76840.78, "clients": 105.3, "clientsPrevMonth": 100, "currentFee": 1350, "newFee": 1475, "diff": 125, "direction": "increase", "reasons": ["Volume bonus: 105.3 avg clients/6mo (+$125/mo) \u2014 rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 110, "name": "Ruhe Aesthetics", "provider": "Emily Rizvi, Angel Bryant", "mespaId": "1953", "psm": "Katie Sensing", "md": "Robert Berberian", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 54995.64, "clients": 89.7, "clientsPrevMonth": 105, "currentFee": 1075, "newFee": 1350, "diff": 275, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 123, "name": "Skin Haven Aesthetics and Wellness", "provider": "Jihan Brueggemann", "mespaId": "1861", "psm": "Alisha Faber", "md": "Ronald Chao", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 21354.49, "clients": 46.3, "clientsPrevMonth": 48, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 126, "name": "Alpine Glow and Wellness", "provider": "Krystal Kay Johnson", "mespaId": "2564", "psm": "Ericka Olmos", "md": "Larry Skeete", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 20072.27, "clients": 28.3, "clientsPrevMonth": 32, "currentFee": 650, "newFee": 1350, "diff": 700, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 129, "name": "Reneu Medical Aesthetics", "provider": "Morgan McAtee, RN", "mespaId": "1819", "psm": "Marcus Repp", "md": "Jason Chertoff", "state": "OH", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Laser Hair Removal"], "revenue": 19616.01, "clients": 37.8, "clientsPrevMonth": 34, "currentFee": 500, "newFee": 1200, "diff": 700, "direction": "increase", "reasons": ["Advanced services (Laser Hair Removal) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 133, "name": "Revive Injection Clinic", "provider": "Jenna Goodwin FNP-C, Tracy Mazy FNP-BC, Trazy Mazy FNP-BC (Telehealth)", "mespaId": "1904", "psm": "Marcus Repp", "md": "Bharat Kothakota", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy", "Male Hormone Therapy"], "revenue": 10147.68, "clients": 17.0, "clientsPrevMonth": 36, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy, Male Hormone Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 142, "name": "BeautiLab Aesthetics", "provider": "Kim Albittar", "mespaId": "1985", "psm": "Ericka Olmos", "md": "Brian Subach", "state": "VA", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy", "Fractional Laser", "Laser Hair Removal"], "revenue": 11816.3, "clients": 24.0, "clientsPrevMonth": 31, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy, Fractional Laser, +more) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 146, "name": "Younique by MK", "provider": "MaryKate Walsh", "mespaId": "2563", "psm": "Growth Success", "md": "Nilay Patel", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Fully Ablative Laser"], "revenue": 1028.34, "clients": 0.5, "clientsPrevMonth": 1, "currentFee": 650, "newFee": 950, "diff": 300, "direction": "increase", "reasons": ["Custom PC state (CA/NC)"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 153, "name": "Savvy Aesthetics", "provider": "Audrey Balmes", "mespaId": "2183", "psm": "Michelle Garcia", "md": "Lindsay Dragos", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Fractional Laser"], "revenue": 13610.25, "clients": 24.2, "clientsPrevMonth": 27, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Fractional Laser) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 173, "name": "Marcel Aesthetics", "provider": "Marcel - Main Clinic", "mespaId": "2072", "psm": "Jaqlyn Dreas", "md": "Justin Rome", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Fractional Laser"], "revenue": 15844.21, "clients": 14.7, "clientsPrevMonth": 13, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Fractional Laser) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 177, "name": "Terra Aesthetics & Wellness", "provider": "Gabriele Myslinski", "mespaId": "2123", "psm": "Kendra Waller", "md": "Asaf Presente", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Fractional Laser", "Laser Hair Removal"], "revenue": 14658.09, "clients": 20.0, "clientsPrevMonth": 14, "currentFee": 750, "newFee": 1350, "diff": 600, "direction": "increase", "reasons": ["Advanced services (Fractional Laser, Laser Hair Removal) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 187, "name": "Aesthetics Haven", "provider": "Ashlan Asbill", "mespaId": "2274", "psm": "Michelle Garcia", "md": "Eeman Tariq", "state": "PA", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 33619.22, "clients": 48.7, "clientsPrevMonth": 61, "currentFee": 500, "newFee": 650, "diff": 150, "direction": "increase", "reasons": ["Standard rate correction"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 188, "name": "Lotus Breeze Med Spa", "provider": "Deborah Keller", "mespaId": "2240", "psm": "Sarah Smith", "md": "Nilay Patel", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["IPL / BBL"], "revenue": 4143.94, "clients": 12.0, "clientsPrevMonth": 21, "currentFee": 650, "newFee": 950, "diff": 300, "direction": "increase", "reasons": ["Custom PC state (CA/NC)"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 190, "name": "Lumeva MedSpa", "provider": "Shared Lakhani, Sharmila Lakhani", "mespaId": "2461", "psm": "Growth Success", "md": "Igor Shkolnik", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 405.5, "clients": 0.5, "clientsPrevMonth": 0, "currentFee": 300, "newFee": 650, "diff": 350, "direction": "increase", "reasons": ["Standard rate correction"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 197, "name": "Rx4CHANGE", "provider": "Juliana Gates Weatherford", "mespaId": "1877", "psm": "Jaqlyn Dreas", "md": "Stephen Ratcliff", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy", "Male Hormone Therapy"], "revenue": 14707.13, "clients": 29.7, "clientsPrevMonth": 36, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy, Male Hormone Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 204, "name": "The Glow Joint", "provider": "Tia Smith", "mespaId": "2568", "psm": "Michelle Garcia", "md": "Larry Skeete", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": false, "advServices": [], "revenue": 7303.02, "clients": 18.7, "clientsPrevMonth": 27, "currentFee": 650, "newFee": 950, "diff": 300, "direction": "increase", "reasons": ["Custom PC state (CA/NC)"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 219, "name": "Glow Studio Med Spa & Wellness", "provider": "Becky Schmitt, Caitlin Murphy", "mespaId": "2000", "psm": "Juliana Herrero", "md": "Mark Shashikant", "state": "WI", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 36219.63, "clients": 92.8, "clientsPrevMonth": 101, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 226, "name": "Embrace Beauty Med Spa", "provider": "David Acuna, Edith Gonzalez", "mespaId": "2300", "psm": "Heather Dominguez", "md": "Robert Gray", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Fractional Laser"], "revenue": 23830.73, "clients": 41.2, "clientsPrevMonth": 41, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Fractional Laser) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 266, "name": "\u00c9lev\u00e9 Aesthetics", "provider": "Ragi Sadek, Mariana Shenoda", "mespaId": "1864", "psm": "Marcus Repp", "md": "Devika Chase", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Laser Hair Removal"], "revenue": 19737.46, "clients": 68.3, "clientsPrevMonth": 109, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Laser Hair Removal) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 268, "name": "Iconic Beauty Med Spa", "provider": "Yulia Sachakova", "mespaId": "1983", "psm": "Alisha Faber", "md": "Justin Rome", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 24812.42, "clients": 19.8, "clientsPrevMonth": 31, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 269, "name": "Elevate IV", "provider": "Evan --", "mespaId": "2060", "psm": "Heather Dominguez", "md": "Asaf Presente", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 34507.93, "clients": 9.7, "clientsPrevMonth": 10, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 274, "name": "Pore Decisions Med Spa", "provider": "Katelyn Cao", "mespaId": "2048", "psm": "Heather Dominguez", "md": "Justin Rome", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["IPL / BBL", "Laser Hair Removal"], "revenue": 15097.51, "clients": 21.2, "clientsPrevMonth": 24, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (IPL / BBL, Laser Hair Removal) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 278, "name": "Skinworx", "provider": "Cheryl Pierce", "mespaId": "1645", "psm": "Heather Dominguez", "md": "Robert Gray", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["IPL / BBL"], "revenue": 62825.54, "clients": 101.7, "clientsPrevMonth": 127, "currentFee": 950, "newFee": 1475, "diff": 525, "direction": "increase", "reasons": ["Advanced services (IPL / BBL) + 6-mo avg rev above $10K", "Volume bonus: 101.7 avg clients/6mo (+$125/mo) \u2014 rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 282, "name": "2Beautiful Weight-Loss & Med Spa", "provider": "Haylie Reece, Macie Hefner", "mespaId": "2480", "psm": "Heather Dominguez", "md": "Maryanne Lindsay", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": false, "advServices": [], "revenue": 5823.69, "clients": 8.7, "clientsPrevMonth": 5, "currentFee": 650, "newFee": 950, "diff": 300, "direction": "increase", "reasons": ["Custom PC state (CA/NC)"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 284, "name": "Pure Intentions Med Spa", "provider": "Angelica Velasco", "mespaId": "2081", "psm": "Jaqlyn Dreas", "md": "Justin Rome", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 12967.24, "clients": 22.2, "clientsPrevMonth": 29, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 339, "name": "Oasis Medaesthetics", "provider": "Jennifer Morgan, Jennifer O&#39;Dell", "mespaId": "2566", "psm": "Kendra Waller", "md": "Sharon Browning", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["IPL / BBL", "Fractional Laser", "Laser Hair Removal"], "revenue": 10360.99, "clients": 21.2, "clientsPrevMonth": 15, "currentFee": 650, "newFee": 1350, "diff": 700, "direction": "increase", "reasons": ["Advanced services (IPL / BBL, Fractional Laser, +more) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 358, "name": "Drea M Aesthetics", "provider": "Andrea Musa", "mespaId": "1399", "psm": "Ericka Olmos", "md": "Brady Steineck (MD Profile)", "state": "OH", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Male Hormone Therapy"], "revenue": 22572.53, "clients": 46.0, "clientsPrevMonth": 61, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Male Hormone Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 360, "name": "Bloom Wellness Lounge", "provider": "Claire Faichney", "mespaId": "2065", "psm": "Jaqlyn Dreas", "md": "Joel Jones", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 21571.94, "clients": 54.7, "clientsPrevMonth": 40, "currentFee": 1200, "newFee": 650, "diff": -550, "direction": "decrease", "reasons": ["No advanced services on file \u2014 should be at standard rate"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 361, "name": "Myo Beauty Aesthetics", "provider": "Christi Cabrera", "mespaId": "2569", "psm": "Kendra Waller", "md": "Sharon Browning", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["IPL / BBL"], "revenue": 13443.83, "clients": 21.7, "clientsPrevMonth": 28, "currentFee": 650, "newFee": 1350, "diff": 700, "direction": "increase", "reasons": ["Advanced services (IPL / BBL) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 364, "name": "LOLA&#39;s Med Spa", "provider": "Dolores Martinez", "mespaId": "2439", "psm": "Megan Koncek", "md": "Susan Tanyi", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 10895.56, "clients": 47.3, "clientsPrevMonth": 48, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 376, "name": "Revive Wellness and Esthetics", "provider": "Kathy Decembrino, Stacy Oleksa", "mespaId": "1900", "psm": "Ericka Olmos", "md": "Shannon Arora", "state": "PA", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 31900.19, "clients": 77.7, "clientsPrevMonth": 93, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 379, "name": "Urban Chic Aesthetix", "provider": "Hruzek Shannon", "mespaId": "2318", "psm": "Kendra Waller", "md": "Lindsay Dragos", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["IPL / BBL"], "revenue": 36694.59, "clients": 52.3, "clientsPrevMonth": 51, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (IPL / BBL) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 387, "name": "Known Aesthetics", "provider": "Candice South Hills Trent, Tori Wexford DiMichele, Tori South Hills DiMichele, Candice Wexford Trent", "mespaId": "1888", "psm": "Angie Wing", "md": "Dylan Deatrich, Stephen Ratcliff", "state": "PA", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy", "Fractional Laser"], "revenue": 99936.61, "clients": 133.2, "clientsPrevMonth": 151, "currentFee": 1200, "newFee": 1325, "diff": 125, "direction": "increase", "reasons": ["Volume bonus: 133.2 avg clients/6mo (+$125/mo) \u2014 rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 391, "name": "Transcend Medical Aesthetics", "provider": "Jessica Casher", "mespaId": "2188", "psm": "Michelle Garcia", "md": "Robert Gray", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 12142.64, "clients": 14.8, "clientsPrevMonth": 20, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 393, "name": "VIVID WELLNESS", "provider": "Kaitlyn Sarcona", "mespaId": "2122", "psm": "Kendra Waller", "md": "Jason Chertoff", "state": "OH", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 57900.73, "clients": 124.5, "clientsPrevMonth": 143, "currentFee": 650, "newFee": 775, "diff": 125, "direction": "increase", "reasons": ["Volume bonus: 124.5 avg clients/6mo (+$125/mo) \u2014 rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 398, "name": "Great Hydration & Wellness", "provider": "Tracee Serrano", "mespaId": "2390", "psm": "Heather Dominguez", "md": "Babak Saadatmand", "state": "IN", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy"], "revenue": 12850.58, "clients": 34.0, "clientsPrevMonth": 46, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 433, "name": "Just Refreshed Aesthetics", "provider": "Jenna Roberts", "mespaId": "2275", "psm": "Mikyla Race", "md": "Eeman Tariq", "state": "PA", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 6152.42, "clients": 16.0, "clientsPrevMonth": 3, "currentFee": 1200, "newFee": 650, "diff": -550, "direction": "decrease", "reasons": ["No advanced services on file \u2014 should be at standard rate"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 435, "name": "Ivy Hydration, Wellness & Aesthetics", "provider": "Caitlin Rothe", "mespaId": "2181", "psm": "Michelle Garcia", "md": "Michael Woo-Ming", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 25602.34, "clients": 61.8, "clientsPrevMonth": 65, "currentFee": 1200, "newFee": 650, "diff": -550, "direction": "decrease", "reasons": ["No advanced services on file \u2014 should be at standard rate"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 454, "name": "West End MedSpa", "provider": "Obed Fraser PA-C", "mespaId": "2496", "psm": "Marcus Repp", "md": "Evan Vidal", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Peptide Therapy", "Fully Ablative Laser"], "revenue": 21004.04, "clients": 25.3, "clientsPrevMonth": 34, "currentFee": 1150, "newFee": 1350, "diff": 200, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy, Fully Ablative Laser) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 460, "name": "Avandi Aesthetics", "provider": "Kristie Devine", "mespaId": "2038", "psm": "Katie Sensing", "md": "Robert Gray", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["IPL / BBL", "Fractional Laser"], "revenue": 45313.95, "clients": 56.2, "clientsPrevMonth": 63, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (IPL / BBL, Fractional Laser) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 461, "name": "ReNue Wellness Bar", "provider": "Tiffany Moyer, Mike Moyer", "mespaId": "2092", "psm": "Chrissie Zimbleman", "md": "Titilola Alao", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": false, "advServices": [], "revenue": 30186.74, "clients": 92.5, "clientsPrevMonth": 98, "currentFee": 1200, "newFee": 650, "diff": -550, "direction": "decrease", "reasons": ["No advanced services on file \u2014 should be at standard rate"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 465, "name": "Gilded Glow Aesthetics", "provider": "Samantha Chappell", "mespaId": "1758", "psm": "Sarah Smith", "md": "Jon Snipes", "state": "AR", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Male Hormone Therapy"], "revenue": 41290.26, "clients": 56.3, "clientsPrevMonth": 75, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Male Hormone Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 470, "name": "House of Skin and Health", "provider": "Jessica Robertson, Morgan Debs", "mespaId": "2011", "psm": "Sarah Smith", "md": "Greg Caputy", "state": "TX", "isCustom": false, "pcType": "Standard", "isAdvanced": true, "advServices": ["Peptide Therapy", "Male Hormone Therapy"], "revenue": 49419.53, "clients": 73.7, "clientsPrevMonth": 75, "currentFee": 650, "newFee": 1200, "diff": 550, "direction": "increase", "reasons": ["Advanced services (Peptide Therapy, Male Hormone Therapy) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 490, "name": "Skin Deep Med Spa", "provider": "Jessica Gunter", "mespaId": "2567", "psm": "Megan Koncek", "md": "Sharon Browning", "state": "NC", "isCustom": true, "pcType": "Custom", "isAdvanced": false, "advServices": [], "revenue": 8597.22, "clients": 16.7, "clientsPrevMonth": 15, "currentFee": 650, "newFee": 950, "diff": 300, "direction": "increase", "reasons": ["Custom PC state (CA/NC)"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 503, "name": "Isla Aesthetics", "provider": "Lauren Bolton", "mespaId": "2581", "psm": "Heather Dominguez", "md": "Yalda Sedghi", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Fractional Laser"], "revenue": 79115.71, "clients": 148.2, "clientsPrevMonth": 177, "currentFee": 1350, "newFee": 1475, "diff": 125, "direction": "increase", "reasons": ["Volume bonus: 148.2 avg clients/6mo (+$125/mo) \u2014 rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}, {"id": 513, "name": "Sonoma Aesthetics", "provider": "Cheryl Correa", "mespaId": "2576", "psm": "Alisha Faber", "md": "Yalda Sedghi", "state": "CA", "isCustom": true, "pcType": "Custom", "isAdvanced": true, "advServices": ["Fractional Laser"], "revenue": 18175.26, "clients": 34.2, "clientsPrevMonth": 37, "currentFee": 950, "newFee": 1350, "diff": 400, "direction": "increase", "reasons": ["Advanced services (Fractional Laser) + 6-mo avg rev above $10K"], "status": "pending", "note": "", "voidNote": "", "joyceNote": ""}];
+var providers = DATA.map(function(r){return Object.assign({joyceNote:''},r);});
+var filter = 'all', modalId = null, flagSel = null;
+
+// ── GOOGLE SHEETS SYNC
+var SHEET_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDnJqnOy5K11dIk222Bsn8GvAuKC6xZ-L_uP39Qo6EJvGT2bBNHgVd5wUTQH37PZ7Mmw/exec'; // baked in — auto-syncs for all users
+
+function syncToSheet(provider) {
+  if (!SHEET_SCRIPT_URL) return; // not configured yet
+  var payload = {
+    timestamp:   new Date().toISOString(),
+    cycle:       'July 2026',
+    medspa:      provider.name,
+    psm:         provider.psm,
+    state:       provider.state,
+    currentFee:  provider.currentFee,
+    newFee:      provider.newFee,
+    direction:   provider.direction || 'increase',
+    response:    provider.status,
+    note:        provider.note || '',
+    reasons:     (provider.reasons || []).join('; ')
+  };
+  // Apps Script requires sending as form data (not JSON) to avoid CORS preflight
+  var form = new URLSearchParams();
+  form.append('data', JSON.stringify(payload));
+  fetch(SHEET_SCRIPT_URL, {
+    method:  'POST',
+    mode:    'no-cors',
+    body:    form
+  }).catch(function(e){ console.warn('Sheet sync failed:', e); });
+}
+
+function testSheetConnection() {
+  if (!SHEET_SCRIPT_URL) { toast('⚠ Paste the URL first'); return; }
+  toast('Testing connection...', false);
+  var form = new URLSearchParams();
+  form.append('data', JSON.stringify({ test: true, timestamp: new Date().toISOString() }));
+  fetch(SHEET_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: form })
+    .then(function() { toast('✅ Connection OK — sync is working!', true); })
+    .catch(function(e) { toast('⚠ Connection failed: ' + e.message); });
+}
+
+function syncAllToSheet() {
+  if (!SHEET_SCRIPT_URL) { toast('⚠ Sheet URL not configured — see Import tab'); return; }
+  var reviewed = providers.filter(function(p){ return p.status !== 'pending'; });
+  if (!reviewed.length) { toast('No reviewed providers to sync'); return; }
+  reviewed.forEach(function(p){ syncToSheet(p); });
+  toast('✅ Synced ' + reviewed.length + ' reviews to Google Sheet', true);
+}
+function g(id){return document.getElementById(id);}
+
+function renderTable(){
+  var q=(g('srch').value||'').toLowerCase(), tb=g('tbody');
+  var rows=providers.filter(function(p){
+    var mq=!q||['name','psm','state','provider'].some(function(k){return (p[k]||'').toLowerCase().indexOf(q)>=0;});
+    var mf=filter==='all'||filter===p.status||(filter==='flagged'&&(p.status==='flagged'||p.status==='spicy'||p.status==='hold'))||(filter==='decrease'&&p.direction==='decrease');
+    return mq&&mf;
+  });
+  if(!rows.length){tb.innerHTML='<tr class="empty"><td colspan="10">No providers match.</td></tr>';return;}
+  var SC={pending:'sp',approved:'sa',flagged:'sf',spicy:'sf',hold:'sf',voided:'sv'};
+  var SL={pending:'Pending',approved:'Approved',flagged:'Flagged',spicy:'Spicy',hold:'Held',voided:'Voided'};
+  var h='';
+  var hasDec = rows.some(function(p){return p.direction==='decrease';});
+  if(hasDec && filter!=='decrease'){
+    h += '<tr><td colspan="10" style="padding:10px 16px;background:var(--rose-bg);border-bottom:1px solid var(--rose-bdr)">'
+      + '<span style="font-size:12px;color:var(--rose);font-weight:600;">&#x2193; '
+      + rows.filter(function(p){return p.direction==='decrease';}).length
+      + ' provider(s) in this view have a fee decrease — filter by &#x2193; Decreases to see them separately</span></td></tr>';
+  }
+  rows.forEach(function(p){
+    var diff=p.newFee-p.currentFee, above=p.revenue>=10000;
+    var vol=(p.clients>=100)?Math.floor(p.clients/100)*125:0;
+    var adv=(p.advServices||[]).join(', ');
+    var rs=(p.reasons||[]).map(function(r){return '<div style="font-size:10px;color:var(--brown);margin-top:2px">&middot; '+r+'</div>';}).join('');
+    h+='<tr>'
+      +'<td><div class="pname">'+p.name+'</div><div class="psub">'+p.state+' &middot; '+p.pcType+' PC'+(p.provider?' &middot; '+p.provider.split(',')[0]:'')+'</div></td>'
+      +'<td style="color:var(--taupe);font-size:12px">'+p.pcType+'</td>'
+      +'<td><div>$'+p.revenue.toLocaleString(undefined,{maximumFractionDigits:0})+'</div><div class="'+(above?'rv-ok':'rv-lo')+'">'+(above?'&#x2713; Above $10K':'Below $10K')+'</div></td>'
+      +'<td>'+p.clients+(vol>0?'<div class="rv-ok">+$'+vol+'/mo</div>':'')+'</td>'
+      +'<td style="font-size:12px;color:var(--amber);font-weight:500">'+(adv||'<span style="color:var(--taupe)">&mdash;</span>')+'</td>'
+      +'<td><span class="pill pn">$'+p.currentFee+'/mo</span></td>'
+      +'<td><span class="pill pu">&#x2191; $'+p.newFee+'/mo</span></td>'
+      +'<td><span class="pill '+(p.direction==="decrease"?'pd':'pa')+'">'+(p.direction==="decrease"?'&#x2193; Fee Decrease':'Fee Update')+'</span>'+rs+'</td>'
+      +'<td><div style="font-size:12px;font-weight:600;margin-bottom:5px">'+p.psm+'</div>'
+        +'<button class="sbtn '+(SC[p.status]||'sp')+'" onclick="openRev('+p.id+')"><span class="sdot"></span>'+(SL[p.status]||'Pending')+'</button></td>'
+      +'<td><div class="acts">'
+        +(p.status==='pending'?'<button class="bxs bapp" onclick="quickApp('+p.id+')">Approve</button>':'')
+        +(p.status!=='voided'?'<button class="bxs brev" onclick="openRev('+p.id+')">'+(p.status==='pending'?'Review':'Edit')+'</button>':'')
+        +'<button class="bxs bvoid" onclick="'+(p.status==='voided'?'unvoid':'voidP')+'('+p.id+')">'+(p.status==='voided'?'&#x21A9; Restore':'&#x2298; Void')+'</button>'
+        +'</div></td></tr>';
+    if(p.note) h+='<tr class="nrow"><td colspan="10"><div class="ninner"><strong>Note:</strong> '+p.note+'</div></td></tr>';
+    if(p.status==='voided'){
+      var vtlbl={review:'Review next cycle',permanent:'Permanent'}[p.voidType||'review']||'Review next cycle';
+      h+='<tr class="nrow"><td colspan="10"><div class="ninner" style="border-left-color:var(--taupe)"><strong>&#x2298; Voided ('+vtlbl+'):</strong> '+(p.voidNote||'Special case')+'</div></td></tr>';
+    }
+  });
+  tb.innerHTML=h;
+}
+
+function updateStats(){
+  var total=providers.length, voided=providers.filter(function(p){return p.status==='voided';}).length;
+  var pend=providers.filter(function(p){return p.status==='pending';}).length;
+  var app=providers.filter(function(p){return p.status==='approved';}).length;
+  var flag=providers.filter(function(p){return p.status==='flagged'||p.status==='spicy'||p.status==='hold';}).length;
+  var act=total-voided, pct=act?Math.round((app+flag)/act*100):0;
+  g('sTotal').textContent=total; g('sPend').textContent=pend; g('sApp').textContent=app; g('sFlag').textContent=flag;
+  g('progFill').style.width=pct+'%'; g('progPct').textContent=pct+'%';
+  g('tbOv').textContent=pend; g('tbPsm').textContent=pend; g('tbExc').textContent=flag||'&mdash;';
+}
+
+function renderAll(){renderTable();updateStats();renderExc();}
+
+function setFilter(f,btn){
+  filter=f;
+  document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active'); renderTable();
+}
+
+function quickApp(id){var p=providers.find(function(x){return x.id===id;});p.status='approved';saveState();renderAll();renderPsm();syncToSheet(p);toast('Approved',true);}
+
+var _voidId=null;
+function voidP(id){
+  var p=providers.find(function(x){return x.id===id;});
+  if(!p)return;
+  _voidId=id;
+  g('voidModalSub').textContent='"'+p.name+'"';
+  document.querySelector('input[name="voidType"][value="review"]').checked=true;
+  g('voidReason').value='';
+  g('voidModal').classList.add('open');
+  setTimeout(function(){g('voidReason').focus();},100);
+}
+function closeVoidModal(){g('voidModal').classList.remove('open');_voidId=null;}
+function confirmVoid(){
+  if(!_voidId)return;
+  var p=providers.find(function(x){return x.id===_voidId;});
+  if(!p)return;
+  var typeEl=document.querySelector('input[name="voidType"]:checked');
+  var vtype=typeEl?typeEl.value:'cycle';
+  p.status='voided';
+  p.voidType=vtype;
+  p.voidNote=g('voidReason').value||'Special case';
+  var lbl={review:'review next cycle',permanent:'permanently'}[vtype]||'';
+  closeVoidModal();saveState();renderAll();renderPsm();
+  toast(p.name+' voided — '+lbl);
+}
+function unvoid(id){
+  var p=providers.find(function(x){return x.id===id;});
+  if(!p)return;
+  p.status='pending';p.voidNote='';
+  saveState();renderAll();renderPsm();toast(p.name+' restored',true);
+}
+
+function openRev(id){
+  modalId=id;flagSel=null;
+  var p=providers.find(function(x){return x.id===id;});
+  g('mTitle').textContent=p.name;
+  g('mSub').textContent=p.psm+' · '+p.pcType+' PC · '+p.state;
+  var diff=p.newFee-p.currentFee, above=p.revenue>=10000;
+  var vol=(p.clients>=100)?Math.floor(p.clients/100)*125:0;
+  var adv=(p.advServices||[]).join(', ')||'None — standard only';
+  var rsHtml=(p.reasons||[]).map(function(r){return '<div style="font-size:13px;color:var(--ink2);margin-bottom:3px">✶ '+r+'</div>';}).join('');
+  g('mGrid').innerHTML=
+    '<div class="mf"><label>6-Mo Avg Revenue</label><div class="mv '+(above?'g':'r')+'">$'+p.revenue.toLocaleString(undefined,{maximumFractionDigits:0})+'/mo</div></div>'
+    +'<div class="mf"><label>Clients (6-mo avg)</label><div class="mv">'+p.clients+'</div></div>'
+    +'<div class="mf"><label>Current Fee</label><div class="mv">$'+p.currentFee+'/mo</div></div>'
+    +'<div class="mf"><label>New Fee</label><div class="mv '+(p.direction==="decrease"?'r':'g')+'">$'+p.newFee+'/mo ('+(diff>0?'+':'')+diff+')</div></div>'
+    +'<div class="mf" style="grid-column:1/-1"><label>Advanced Services</label><div class="mv a">'+adv+'</div></div>'
+    +'<div class="mf"><label>Volume Bonus</label><div class="mv '+(vol?'a':'')+'">'+(vol?'+$'+vol+'/mo':'Not applicable')+'</div></div>'
+    +'<div class="mf"><label>Medical Director</label><div class="mv" style="font-size:12px">'+(p.md||'—')+'</div></div>'
+    +'<div class="mf"><label>Provider Owner</label><div class="mv" style="font-size:12px">'+(p.provider||'—')+'</div></div>'
+
+    +(rsHtml?'<div class="mf" style="grid-column:1/-1"><label>Why Increase?</label><div>'+rsHtml+'</div></div>':'');
+  g('mNote').value=p.note||'';
+  ['fApp','fSpy','fChn','fHld'].forEach(function(i){g(i).className='fopt';});
+  var pm={approved:'fApp',spicy:'fSpy',flagged:'fChn',hold:'fHld'};
+  var cm={fApp:'fapp',fSpy:'fspy',fChn:'fchn',fHld:'fhld'};
+  if(pm[p.status]){g(pm[p.status]).classList.add(cm[pm[p.status]]);flagSel={approved:'approve',spicy:'spicy',flagged:'churn',hold:'hold'}[p.status];}
+  g('revModal').classList.add('open');
+}
+function closeRev(){g('revModal').classList.remove('open');modalId=null;flagSel=null;}
+function selFlag(f){
+  flagSel=f;
+  ['fApp','fSpy','fChn','fHld'].forEach(function(i){g(i).className='fopt';});
+  var m={approve:['fApp','fapp'],spicy:['fSpy','fspy'],churn:['fChn','fchn'],hold:['fHld','fhld']};
+  g(m[f][0]).classList.add(m[f][1]);
+}
+function submitRev(){
+  if(!flagSel){toast('Select an action first');return;}
+  var p=providers.find(function(x){return x.id===modalId;});
+  var sm={approve:'approved',spicy:'spicy',churn:'flagged',hold:'hold'};
+  p.status=sm[flagSel];p.note=g('mNote').value;
+  closeRev();saveState();renderAll();renderPsm();syncToSheet(providers.find(function(x){return x.id===modalId;})||{});
+  toast(p.name+' — '+{approve:'approved',spicy:'flagged spicy',churn:'churn risk',hold:'held'}[flagSel],flagSel==='approve');
+}
+g('revModal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeRev();});
+g('voidModal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeVoidModal();});
+
+function renderPsm(){
+  var sel=(currentUser&&currentUser!=='__joyce__')?currentUser:((g('psmSel')||{}).value||'all'), grid=g('psmGrid');
+  // Hide dropdown for non-Joyce users
+  var selEl=g('psmSel'); if(selEl) selEl.style.display=(currentUser&&currentUser!=='__joyce__')?'none':'';
+  var groups={};
+  providers.filter(function(p){return p.status!=='voided';}).forEach(function(p){
+    if(!groups[p.psm])groups[p.psm]=[];groups[p.psm].push(p);
+  });
+  var psms=sel==='all'?Object.keys(groups).sort():(groups[sel]?[sel]:[]);
+  if(!psms.length){grid.innerHTML='<div style="color:var(--taupe);padding:40px;text-align:center;grid-column:1/-1">No pending providers.</div>';return;}
+  var SC={pending:'sp',approved:'sa',flagged:'sf',spicy:'sf',hold:'sf'};
+  var SL={pending:'Pending',approved:'Approved',flagged:'Flagged',spicy:'Spicy',hold:'Held'};
+  var h='';
+  psms.forEach(function(psm){
+    var list=groups[psm]||[], pend=list.filter(function(p){return p.status==='pending';}).length;
+    var init=psm.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+    var sid='slk_'+psm.replace(/[^a-z0-9]/gi,'_');
+    var rh='';
+    list.forEach(function(p){
+      var diff=p.newFee-p.currentFee;
+      var adv=p.advServices&&p.advServices.length?p.advServices[0]:'';
+      var noteVal=p.joyceNote||'';
+      rh+='<div style="background:var(--cream2);border:1px solid var(--cream3);border-radius:8px;padding:10px 12px;">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;" onclick="openRev('+p.id+')">'
+          +'<div style="flex:1;min-width:0"><div class="psm-rn">'+p.name+'</div>'
+          +'<div class="psm-rf">'+p.state+' &middot; $'+p.currentFee+'&rarr;$'+p.newFee+'/mo'+(adv?' &middot; <span style="color:var(--amber)">'+adv+'</span>':'')+'</div></div>'
+          +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
+            +'<span class="pill '+(p.direction==="decrease"?'pd':'pu')+'" style="font-size:10px">'+(p.direction==="decrease"?"-":'+')+'$'+Math.abs(diff)+'</span>'
+            +'<button class="sbtn '+(SC[p.status]||'sp')+'" style="font-size:10px;padding:2px 8px"><span class="sdot"></span>'+(SL[p.status]||'Pending')+'</button>'
+          +'</div>'
+        +'</div>'
+        +'<div class="psm-actions">'
+          +((!currentUser||currentUser==='__joyce__')?'<textarea class="psm-note" rows="2" placeholder="Add a note for this PSM..." data-id="'+p.id+'" onmousedown="event.stopPropagation()" onfocus="event.stopPropagation()" oninput="saveNote('+p.id+',this.value)">'+noteVal+'</textarea>':(noteVal?'<div style="font-size:11px;color:var(--brown);margin-top:6px;padding:5px 8px;background:var(--amber-bg);border-radius:6px;border:1px solid var(--amber-bdr)">&#x1F4CC; '+noteVal+'</div>':''))
+          +((!currentUser||currentUser==='__joyce__')?'<button class="bpsm-void" onmousedown="event.stopPropagation()" onclick="voidP('+p.id+')" title="Void — remove from PSM view">&#x2298; Void</button>':'')
+        +'</div>'
+        +'</div>';
+    });
+    h+='<div class="psm-card">'
+      +'<div class="psm-ch"><div class="psm-av">'+init+'</div>'
+      +'<div><div class="psm-nm">'+psm+'</div><div class="psm-sb">'+list.length+' provider'+(list.length!==1?'s':'')+'</div></div>'
+      +'<span class="psm-cnt">'+list.length+'</span></div>'
+      +'<div class="psm-rows">'+rh+'</div>'
+      +'<div class="psm-foot">'
+      +((!currentUser||currentUser==='__joyce__')?'<button class="psm-slk" id="'+sid+'" data-psm="'+psm+'" onclick="sendDM(this)">&#x1F4AC; Slack</button><button class="psm-email" id="email_'+sid+'" data-psm="'+psm+'" onclick="sendEmail(this)">&#x2709; Email</button>':'')
+      +(pend?'<div class="psm-pend">'+pend+' pending</div>':'<div style="font-size:11px;color:var(--green);font-weight:600;padding:8px 10px">&#x2713; All reviewed</div>')
+      +'</div></div>';
+  });
+  grid.innerHTML=h;
+}
+
+function saveNote(id, val){
+  var p=providers.find(function(x){return x.id===id;});
+  if(p){ p.joyceNote=val; saveState(); }
+}
+
+function buildMsg(psm,list){
+  var first=psm.split(' ')[0];
+  var lines=list.map(function(p){return '• *'+p.name+'* ('+p.state+') — $'+p.currentFee+' → $'+p.newFee+'/mo (+$'+(p.newFee-p.currentFee)+')\n  _'+(p.reasons||[]).join('; ')+'_';}).join('\n');
+  return 'Hey '+first+'! \uD83D\uDC4B\n\n*July 2026 MD Fee Review* — *'+list.length+' provider'+(list.length!==1?'s':'')+' pending review.*\n\n'+lines+'\n\n\u27A1\uFE0F *Open the tracker to submit your review:*\nhttps://md-fee-review-tracker.vercel.app/\n\nFor each provider: \u2705 Approve  \u26A0\uFE0F Spicy  \uD83D\uDEA8 Churn Risk\n\n\uD83D\uDCDD *All responses must be submitted through the tracker only — do not reply to this message.*\n\u2753 *Questions about a fee calculation? DM Joyce directly.*\n*No response in 1 week = billing proceeds automatically.*\n\n— Joyce · MD Billing';
+}
+
+function buildEmailSubject(){
+  return 'Action Required: July 2026 MD Fee Review';
+}
+
+function buildEmailBody(psm, list){
+  var first = psm.split(' ')[0];
+  var lines = list.map(function(p){
+    var diff = p.newFee - p.currentFee;
+    var why  = (p.reasons||[]).join('; ');
+    var note = p.joyceNote ? '\n      Note: ' + p.joyceNote : '';
+    return '  - ' + p.name + ' (' + p.state + ') — $' + p.currentFee + ' → $' + p.newFee + '/mo (+$' + diff + ')\n    ' + why + note;
+  }).join('\n');
+  return 'Hi ' + first + ',\n\n'
+    + 'This is your July 2026 MD Fee Review reminder. You have ' + list.length + ' provider' + (list.length !== 1 ? 's' : '') + ' pending review before the billing cycle closes.\n\n'
+    + 'PROVIDERS FOR REVIEW:\n' + lines + '\n\n'
+    + 'Please open the MD Fee Tracker to submit your review for each provider:\nhttps://md-fee-review-tracker.vercel.app/\n'
+    + 'For each you can: Approve / Flag as Spicy / Mark Churn Risk.\n\n'
+    + '📝 All responses must be submitted through the tracker only — do not reply to this email.\n'
+    + '❓ Questions about a fee calculation? DM Joyce directly on Slack.\n'
+    + 'No response within 1 week = billing proceeds automatically.\n\n'
+    + 'Thanks,\nJoyce\nMD Billing — Moxie';
+}
+
+async function sendEmail(el){
+  var psm  = el.dataset.psm;
+  var list = providers.filter(function(p){ return p.psm === psm && p.status === 'pending'; });
+  if(!list.length){ toast('No pending providers for ' + psm); return; }
+  el.textContent = 'Sending...'; el.disabled = true;
+  try{
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 800,
+        mcp_servers: [
+          {type:'url', url:'https://mcp.slack.com/mcp', name:'slack'},
+          {type:'url', url:'https://gmailmcp.googleapis.com/mcp/v1', name:'gmail'}
+        ],
+        messages: [{role:'user', content:
+          'Do these two steps:\n'
+          + '1. Use slack_search_users to find the email address for "' + psm + '"\n'
+          + '2. Use Gmail to send an email to that address with:\n'
+          + '   Subject: ' + buildEmailSubject() + '\n'
+          + '   Body:\n' + buildEmailBody(psm, list) + '\n\n'
+          + 'Reply only: SENT'
+        }]
+      })
+    });
+    var d = await res.json();
+    var t = (d.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    if(t.indexOf('SENT') >= 0){
+      el.textContent = '✓ Sent!'; el.classList.add('sent'); el.disabled = false;
+      toast('Email sent to ' + psm, true);
+    } else { throw new Error(); }
+  } catch(e){
+    el.textContent = '✗ Failed'; el.disabled = false;
+    setTimeout(function(){ el.textContent = '✉ Email'; el.classList.remove('sent'); }, 2500);
+    toast('Email failed for ' + psm + ' — check Gmail connection');
+  }
+}
+
+async function sendAllEmails(){
+  var psms = [...new Set(providers.filter(function(p){return p.status==='pending';}).map(function(p){return p.psm;}))];
+  if(!psms.length){ toast('No pending providers'); return; }
+  var btn = g('sendAllEmailBtn'); btn.textContent = 'Sending...'; btn.disabled = true;
+  for(var i = 0; i < psms.length; i++){
+    var el = document.querySelector('[id="email_slk_'+psms[i].replace(/[^a-z0-9]/gi,'_')+'"]');
+    if(el) await sendEmail(el);
+    await new Promise(function(r){ setTimeout(r, 800); });
+  }
+  btn.textContent = '✓ Done'; btn.disabled = false;
+  setTimeout(function(){ btn.textContent = '✉ Email All'; }, 3000);
+}
+
+async function sendDM(el){
+  var psm=el.dataset.psm;
+  var list=providers.filter(function(p){return p.psm===psm&&p.status==='pending';});
+  if(!list.length){toast('No pending providers for '+psm);return;}
+  el.textContent='Sending...';el.disabled=true;
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,
+        mcp_servers:[{type:'url',url:'https://mcp.slack.com/mcp',name:'slack'}],
+        messages:[{role:'user',content:'Find Slack user ID for "'+psm+'" via slack_search_users, then send them this DM via slack_send_message using their user_id as channel_id:\n\n'+buildMsg(psm,list)+'\n\nReply only: SENT'}]})});
+    var d=await res.json();
+    var t=(d.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    if(t.indexOf('SENT')>=0){el.textContent='Sent!';el.classList.add('sent');el.disabled=false;toast('DM sent to '+psm,true);}
+    else throw new Error();
+  }catch(e){
+    navigator.clipboard.writeText(buildMsg(psm,list)).then(function(){
+      el.textContent='Copied!';el.disabled=false;
+      setTimeout(function(){el.textContent='Send DM';el.classList.remove('sent');},2500);
+      toast('Copied for '+psm+' — paste in Slack');
+    });
+  }
+}
+
+async function sendAllDMs(){
+  var psms=[...new Set(providers.filter(function(p){return p.status==='pending';}).map(function(p){return p.psm;}))];
+  if(!psms.length){toast('No pending providers');return;}
+  var btn=g('sendAllBtn');btn.textContent='Sending...';btn.disabled=true;
+  for(var i=0;i<psms.length;i++){
+    var el=document.querySelector('[data-psm="'+psms[i]+'"]');
+    if(el)await sendDM(el);
+    await new Promise(function(r){setTimeout(r,600);});
+  }
+  btn.textContent='Done!';btn.disabled=false;setTimeout(function(){btn.textContent='Send All DMs';},3000);
+}
+
+function openSlackModal(){
+  var byPsm={};
+  providers.filter(function(p){return p.status==='pending';}).forEach(function(p){if(!byPsm[p.psm])byPsm[p.psm]=[];byPsm[p.psm].push(p);});
+  g('slackPre').textContent=Object.entries(byPsm).map(function(e){return buildMsg(e[0],e[1]);}).join('\n\n--------------------\n\n')||'All reviewed.';
+  g('slackModal').classList.add('open');
+}
+function closeSlack(){g('slackModal').classList.remove('open');}
+function copySlack(){navigator.clipboard.writeText(g('slackPre').textContent).then(function(){toast('Copied!',true);});}
+g('slackModal').addEventListener('click',function(e){if(e.target===e.currentTarget)closeSlack();});
+
+function renderExc(){
+  var mine = (currentUser && currentUser !== '__joyce__')
+    ? function(p){ return p.psm === currentUser; }
+    : function(){ return true; };
+  var ch=providers.filter(function(p){return p.status==='flagged' && mine(p);}),
+      sp=providers.filter(function(p){return p.status==='spicy'   && mine(p);}),
+      ho=providers.filter(function(p){return p.status==='hold'    && mine(p);});
+  g('exChurn').textContent=ch.length;g('exSpicy').textContent=sp.length;g('exHold').textContent=ho.length;
+  g('tbExc').textContent=(ch.length+sp.length+ho.length)||'&mdash;';
+  var el=g('excContent');
+  function mk(list,type){
+    var tc={flagged:'tc',spicy:'ts',hold:'th'}[type];
+    var lb={flagged:'Churn Risk',spicy:'Spicy',hold:'Held'}[type];
+    return list.map(function(p){
+      var diff=p.newFee-p.currentFee;
+      return '<div class="exc-card '+tc+'"><div><div class="exc-cn">'+p.name+'</div><div class="exc-meta">'+lb+' &middot; '+p.psm+' &middot; '+p.state+'</div>'
+        +(p.note?'<div class="exc-note">'+p.note+'</div>':'')
+        +'<div class="exc-acts"><button class="bres" onclick="resolveExc('+p.id+')">&#x2713; Resolve</button><button class="bedt" onclick="openRev('+p.id+')">Edit</button></div></div>'
+        +'<div><div class="exc-fee-old">Was $'+p.currentFee+'/mo</div><div class="exc-fee-new">$'+p.newFee+'/mo</div><div class="exc-fee-diff">+$'+diff+'/mo</div></div></div>';
+    }).join('');
+  }
+  if(!ch.length&&!sp.length&&!ho.length){el.innerHTML='<div style="text-align:center;padding:60px;color:var(--taupe)">No exceptions this cycle.</div>';return;}
+  el.innerHTML=(ch.length?'<h2 style="font-family:var(--serif);font-size:18px;margin-bottom:12px">Churn Risk</h2>'+mk(ch,'flagged'):'')
+    +(sp.length?'<h2 style="font-family:var(--serif);font-size:18px;margin:20px 0 12px">Spicy Provider</h2>'+mk(sp,'spicy'):'')
+    +(ho.length?'<h2 style="font-family:var(--serif);font-size:18px;margin:20px 0 12px">Held</h2>'+mk(ho,'hold'):'');
+}
+function resolveExc(id){var p=providers.find(function(x){return x.id===id;});p.status='approved';p.newFee=p.currentFee;saveState();renderAll();renderPsm();toast(p.name+' resolved',true);}
+function exportExc(){
+  var all=providers.filter(function(p){return p.status==='flagged'||p.status==='spicy'||p.status==='hold';});
+  if(!all.length){toast('No exceptions');return;}
+  var csv=['Provider,PSM,State,Current Fee,New Fee,Type,Note'].concat(all.map(function(p){return [p.name,p.psm,p.state,p.currentFee,p.newFee,p.status,(p.note||'').replace(/,/g,';')].join(',');})).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='MD_Exceptions_Jul2026.csv';a.click();
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  btn.classList.add('active');document.getElementById('panel-'+id).classList.add('active');
+  if(id==='psm')renderPsm();if(id==='exceptions')renderExc();if(id==='import'){
+    document.getElementById('uploadStatus').style.display='none';
+    document.getElementById('uploadError').style.display='none';
+    var st=loadState(), keys=Object.keys(st), cycle=currentCycle();
+    var cycleKeys=keys.filter(function(k){return st[k].cycle===cycle;});
+    var st=state;
+    var allVoided=keys.filter(function(k){return st[k].status==='voided';});
+    var permVoids=allVoided.filter(function(k){return st[k].voidType==='permanent';}).length;
+    var cycleVoids=allVoided.filter(function(k){return st[k].voidType!=='permanent';}).length;
+    var voids=cycleVoids+permVoids;
+    var flags=cycleKeys.filter(function(k){return ['flagged','spicy','hold'].includes(st[k].status);}).length;
+    var notes=keys.filter(function(k){return st[k].joyceNote;}).length;
+    document.getElementById('storageInfoText').textContent = cycleKeys.length
+      ? cycle+' cycle: '+voids+' voided, '+flags+' flagged, '+notes+' with notes saved'
+      : 'No saved state for '+cycle+' cycle yet.';
+  }
+}
+function toast(msg,green){var t=g('toast');t.textContent=msg;t.className='toast'+(green?' tg':'')+' show';setTimeout(function(){t.classList.remove('show');},3000);}
+
+// ── CSV UPLOAD
+var uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', function(e){ e.preventDefault(); uploadZone.style.borderColor='var(--brown)'; uploadZone.style.background='var(--cream2)'; });
+uploadZone.addEventListener('dragleave', function(){ uploadZone.style.borderColor='var(--sand)'; uploadZone.style.background='#fff'; });
+uploadZone.addEventListener('drop', function(e){
+  e.preventDefault(); uploadZone.style.borderColor='var(--sand)'; uploadZone.style.background='#fff';
+  var file = e.dataTransfer.files[0];
+  if(file && file.name.endsWith('.csv')) parseCSV(file);
+  else showUploadError('Please upload a .csv file.');
+});
+document.getElementById('csvInput').addEventListener('change', function(e){
+  if(e.target.files[0]) parseCSV(e.target.files[0]);
+});
+
+var ADV_NAMES = ['Female Hormone Therapy','Fractional Laser','Fully Ablative Laser','IPL / BBL','Laser Hair Removal','Male Hormone Therapy','Non Ablative Laser','Peptide Therapy'];
+var CUSTOM_STATES = ['CA','NC'];
+
+function parseCSV(file){
+  document.getElementById('uploadStatus').style.display='none';
+  document.getElementById('uploadError').style.display='none';
+  Papa.parse(file, {
+    header: true, skipEmptyLines: true,
+    complete: function(res){
+      try {
+        var rows = res.data;
+        if(!rows.length){ showUploadError('CSV is empty.'); return; }
+        var keys = Object.keys(rows[0]);
+        var clientKey  = keys.find(function(k){ var l=k.toLowerCase(); return l.indexOf('client')>=0 && l.indexOf('previous month')>=0 && l.indexOf('6')<0 && l.indexOf('avg')<0; });
+        var revenueKey = keys.find(function(k){ var l=k.toLowerCase(); return l.indexOf('avg')>=0 && l.indexOf('net revenue')>=0 && l.indexOf('6')>=0; });
+        var extKey     = keys.find(function(k){ return k.trim()==='External MD?'; }) || keys.find(function(k){ return k.toLowerCase().replace(/[^a-z]/g,'').indexOf('externalmd')>=0; }) || null;
+
+        var loaded = [], idx = 0;
+        rows.forEach(function(r){
+          idx++;
+          var status  = (r['Subscription Status']||'').toLowerCase().trim();
+          if(status === 'canceled') return;
+          var extVal  = extKey ? (r[extKey]||'').toString().trim() : '';
+          if(extKey && /^(yes|y|true)$/i.test(extVal)) return;
+          var fee     = parseFloat(r['Monthly Fee'])||0;
+          if(!fee) return;
+          var rev     = parseFloat(r[revenueKey])||0;
+          var clients = parseFloat(r[clientKey])||0;
+          var svc     = r['Service Types Offered']||'';
+          var state   = (r['State']||'').toUpperCase().trim();
+          var custom  = CUSTOM_STATES.indexOf(state)>=0;
+          var isAdv   = ADV_NAMES.some(function(a){ return svc.toLowerCase().indexOf(a.toLowerCase())>=0; });
+          var advSvcs = ADV_NAMES.filter(function(a){ return svc.toLowerCase().indexOf(a.toLowerCase())>=0; });
+          var above   = rev >= 10000;
+          var baseStd = custom ? 950 : 650;
+          var baseAdv = custom ? 1350 : 1200;
+          var base    = (isAdv && above) ? baseAdv : baseStd;
+          var vol     = (clients >= 100) ? Math.floor(clients/100)*125 : 0;
+          var newFee  = base + vol;
+          if(newFee === fee || fee === 0) return;
+          var direction = newFee > fee ? 'increase' : 'decrease';
+          var reasons = [];
+          if(isAdv && above && fee < baseAdv) reasons.push('Advanced services (' + advSvcs.slice(0,2).join(', ') + (advSvcs.length>2?', +more':'') + ') + revenue above $10K');
+          else if(fee < baseStd) reasons.push(custom ? 'Custom PC state (IL/NC/CA)' : 'Standard rate correction');
+          if(vol>0 && fee < base+vol) reasons.push('Volume bonus: '+Math.round(clients)+' clients (+$'+vol+'/mo)');
+          if(!reasons.length){
+            if(direction==='decrease'){
+              if(isAdv && !above && fee > baseStd) reasons.push('Advanced rate no longer qualifies — 6-mo avg rev below $10K');
+              else if(!isAdv && fee > baseStd) reasons.push('No advanced services on file — should be at standard rate');
+              else if(vol===0 && fee > base) reasons.push('Volume bonus no longer applies');
+              else reasons.push('Fee above calculated rate — correction needed');
+            } else { return; }
+          }
+          var psm = (r['PSM Name']||'').trim()||'Unassigned';
+          loaded.push({
+            id: idx, name: r['Medspa Name']||'', provider: r['Provider Owner(s)']||'',
+            psm: psm, md: r['Medical Director(s), Non-GFE Reviewer(s)']||'',
+            state: state, isCustom: custom, pcType: custom?'Custom':'Standard',
+            isAdvanced: isAdv, advServices: advSvcs,
+            revenue: Math.round(rev*100)/100, clients: Math.round(clients),
+            currentFee: Math.round(fee), newFee: newFee, reasons: reasons,
+            direction: direction, diff: Math.round(newFee - fee),
+            status: 'pending', note: '', voidNote: '', joyceNote: ''
+          });
+        });
+
+        if(!loaded.length){ showUploadError('No providers found for fee increase after applying filters.'); return; }
+
+        // Replace all data
+        providers = loaded;
+        applyState(); // re-apply saved statuses/notes from localStorage
+        // Rebuild PSM dropdown
+        var sel = document.getElementById('psmSel');
+        var psms = loaded.map(function(p){return p.psm;}).filter(function(p,i,a){return p!=='Unassigned'&&a.indexOf(p)===i;}).sort();
+        sel.innerHTML = '<option value="all">All PSMs</option>';
+        psms.forEach(function(p){ var o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); });
+
+        var extExcl = extKey ? rows.filter(function(r){ return /^(yes|y|true)$/i.test((r[extKey]||'').trim()); }).length : 0;
+        var cancExcl = rows.filter(function(r){ return (r['Subscription Status']||'').toLowerCase().trim()==='canceled'; }).length;
+        document.getElementById('uploadStatus').style.display = 'block';
+        document.getElementById('uploadStatus').innerHTML = '&#x2705; <strong>' + loaded.length + ' providers loaded</strong> &middot; ' + extExcl + ' external MDs excluded &middot; ' + cancExcl + ' canceled excluded';
+        renderAll(); renderPsm();
+        switchTab('overview', document.querySelectorAll('.tab')[0]);
+        toast('&#x2705; ' + loaded.length + ' providers loaded from CSV', true);
+      } catch(err) {
+        showUploadError('Error parsing CSV: ' + err.message);
+      }
+    },
+    error: function(err){ showUploadError('Could not read file: ' + err.message); }
+  });
+}
+
+function showUploadError(msg){
+  var el = document.getElementById('uploadError');
+  el.style.display = 'block'; el.textContent = '⚠ ' + msg;
+}
+
+// ── LOCALSTORAGE PERSISTENCE
+var STORE_KEY = 'moxie_md_fees_state';
+
+function saveState(){
+  // Save per-provider: name (key), status, note, voidNote, joyceNote
+  var state = {};
+  providers.forEach(function(p){
+    if(p.status !== 'pending' || p.note || p.voidNote || p.joyceNote){
+      state[p.name] = {
+        status:     p.status,
+        note:       p.note       || '',
+        voidNote:   p.voidNote   || '',
+        joyceNote:  p.joyceNote  || '',
+        voidType:   p.voidType   || 'cycle',
+        cycle:      currentCycle()
+      };
+    }
+  });
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){}
+}
+
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return {};
+    return JSON.parse(raw);
+  } catch(e){ return {}; }
+}
+
+function applyState(){
+  var state = loadState();
+  var cycle = currentCycle();
+  providers.forEach(function(p){
+    var saved = state[p.name];
+    if(!saved) return;
+    var vtype = saved.voidType || 'review';
+    var shouldApply = false;
+    if(saved.status === 'voided'){
+      if(vtype === 'permanent'){
+        shouldApply = true;           // always hidden
+      } else {
+        shouldApply = (saved.cycle === cycle); // review = only this cycle, resets next
+      }
+    } else {
+      // flags/approvals — same cycle only
+      shouldApply = (saved.cycle === cycle);
+    }
+    if(shouldApply){
+      p.status   = saved.status   || 'pending';
+      p.note     = saved.note     || '';
+      p.voidNote = saved.voidNote || '';
+      p.voidType = vtype;
+    }
+    // joyceNote always carries across cycles
+    p.joyceNote = saved.joyceNote || '';
+  });
+}
+
+function currentCycle(){
+  // Returns "YYYY-Jan" or "YYYY-Jul" — the current billing cycle
+  var d = new Date();
+  var m = d.getMonth(); // 0-11
+  return d.getFullYear() + (m < 6 ? '-Jan' : '-Jul');
+}
+
+function clearState(){
+  if(!confirm('Clear all saved statuses, notes and voids? This cannot be undone.')) return;
+  try{ localStorage.removeItem(STORE_KEY); } catch(e){}
+  providers.forEach(function(p){ p.status='pending'; p.note=''; p.voidNote=''; p.joyceNote=''; });
+  renderAll(); renderPsm();
+  toast('Saved state cleared', true);
+}
+
+function saveAndRender(){
+  saveState(); renderAll(); renderPsm();
+}
+
+// Apply saved state on top of baked-in data
+applyState();
+
+// Load sheet URL from localStorage
+try {
+  var savedUrl = localStorage.getItem('moxie_sheet_url');
+  if (savedUrl) {
+    SHEET_SCRIPT_URL = savedUrl;
+    var inp = document.getElementById('sheetUrlInput');
+    if (inp) inp.value = savedUrl;
+  }
+} catch(e){}
+
+// ── IDENTITY
+var currentUser = null;
+
+function initIdentity(){
+  var saved = null;
+  try { saved = localStorage.getItem('moxie_who'); } catch(e){}
+  if(saved){
+    currentUser = saved;
+    applyIdentity(false);
+  } else {
+    // Populate the PSM dropdown in welcome modal
+    populateWhoAmI();
+    g('welcomeModal').classList.add('open');
+  }
+}
+
+function populateWhoAmI(){
+  var sel = g('whoAmI');
+  // Remove any PSM options previously added (keep first 3: blank, Joyce, MD Team)
+  while(sel.options.length > 3) sel.remove(3);
+  // Add PSMs fresh
+  var psms = providers.map(function(p){return p.psm;})
+    .filter(function(p,i,a){ return p !== 'Unassigned' && a.indexOf(p) === i; })
+    .sort();
+  psms.forEach(function(psm){
+    var o = document.createElement('option');
+    o.value = psm; o.textContent = psm;
+    sel.appendChild(o);
+  });
+}
+
+function onWhoChange(){
+  var val = g('whoAmI').value;
+  var wrap = g('joycePasskeyWrap');
+  var err  = g('passkeyError');
+  wrap.style.display = (val === '__joyce__') ? 'block' : 'none';
+  if(err) err.style.display = 'none';
+  if(val === '__joyce__') setTimeout(function(){ g('joycePasskey').focus(); }, 100);
+}
+
+var JOYCE_PASSKEY = 'moxie2026';  // Change this to your actual passkey
+
+function confirmIdentity(){
+  var val = g('whoAmI').value;
+  if(!val){ toast('Please select your name'); return; }
+  if(val === '__joyce__'){
+    var entered = g('joycePasskey').value;
+    if(entered !== JOYCE_PASSKEY){
+      g('passkeyError').style.display = 'block';
+      g('joycePasskey').focus();
+      return;
+    }
+  }
+  currentUser = val;
+  if(g('rememberMe').checked){
+    try{ localStorage.setItem('moxie_who', val); } catch(e){}
+  }
+  g('welcomeModal').classList.remove('open');
+  applyIdentity(true);
+}
+
+function applyIdentity(firstTime){
+  var isJoyce  = (currentUser === '__joyce__');
+  var isMDTeam = (currentUser === '__mdteam__');
+  var isPSM    = !isJoyce && !isMDTeam;
+  var tabs = document.querySelectorAll('.tab');
+  // Tabs: Overview(0), PSM(1), Exceptions(2), Import(3)
+
+  if(isJoyce){
+    tabs[0].style.display = ''; // Overview
+    tabs[1].style.display = ''; // PSM
+    tabs[2].style.display = ''; // Exceptions
+    tabs[3].style.display = ''; // Import
+    // Show Slack/Email buttons
+    var sendAll = g('sendAllBtn');    if(sendAll) sendAll.style.display = '';
+    var emailAll = g('sendAllEmailBtn'); if(emailAll) emailAll.style.display = '';
+    var preview = document.querySelector('[onclick="openSlackModal()"]'); if(preview) preview.style.display = '';
+    if(firstTime) switchTab('overview', tabs[0]);
+
+  } else if(isMDTeam){
+    tabs[0].style.display = ''; // Overview — visible
+    tabs[1].style.display = ''; // PSM — visible
+    tabs[2].style.display = ''; // Exceptions — visible
+    tabs[3].style.display = 'none'; // Import — Joyce only
+    // Hide Slack/Email buttons
+    var sendAll = g('sendAllBtn');    if(sendAll) sendAll.style.display = 'none';
+    var emailAll = g('sendAllEmailBtn'); if(emailAll) emailAll.style.display = 'none';
+    var preview = document.querySelector('[onclick="openSlackModal()"]'); if(preview) preview.style.display = 'none';
+    if(firstTime) switchTab('overview', tabs[0]);
+
+  } else {
+    // PSM
+    tabs[0].style.display = 'none'; // No Overview
+    tabs[1].style.display = ''; // PSM tab
+    tabs[2].style.display = ''; // Exceptions
+    tabs[3].style.display = 'none'; // No Import
+    // Hide Slack/Email buttons
+    var sendAll = g('sendAllBtn');    if(sendAll) sendAll.style.display = 'none';
+    var emailAll = g('sendAllEmailBtn'); if(emailAll) emailAll.style.display = 'none';
+    var preview = document.querySelector('[onclick="openSlackModal()"]'); if(preview) preview.style.display = 'none';
+    if(firstTime){
+      switchTab('psm', tabs[1]);
+      var sel = g('psmSel');
+      for(var i=0; i<sel.options.length; i++){
+        if(sel.options[i].value === currentUser){ sel.options[i].selected = true; break; }
+      }
+      renderPsm();
+    }
+  }
+
+  // Badge
+  var badge = g('userBadge');
+  if(badge){
+    var label = isJoyce ? '&#x1F511; Joyce' : (isMDTeam ? '&#x1F9BA; MD Team' : currentUser);
+    badge.innerHTML = label + ' &nbsp;<span style="font-size:10px;opacity:.6;cursor:pointer;" onclick="switchUser()">(switch)</span>';
+  }
+}
+
+function switchUser(){
+  try{ localStorage.removeItem('moxie_who'); } catch(e){}
+  currentUser = null;
+  populateWhoAmI();
+  g('whoAmI').value = '';
+  g('welcomeModal').classList.add('open');
+}
+
+renderAll();
+renderPsm();
+initIdentity();
+</script>
+</body>
+</html>
